@@ -3,18 +3,29 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Components/ActorComponent.h"
+#include "Components/SceneComponent.h"
 #include "TargetableComponent.generated.h"
 
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class RTS_DEMO_API UTargetableComponent : public UActorComponent
+class RTS_DEMO_API UTargetableComponent : public USceneComponent
 {
 	GENERATED_BODY()
+
+private:
+	int faction;
+	int currentHealth;
+	int maxHealth;
+	void* HealthBar;
+
+	void Die();
 
 public:	
 	// Sets default values for this component's properties
 	UTargetableComponent();
+	bool ReceiveDamage(int dmg);
+	void SetFaction(int faction);
+	int GetFaction();
 
 protected:
 	// Called when the game starts

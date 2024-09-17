@@ -6,11 +6,12 @@
 #include "GameFramework/Character.h"
 #include "UnitState.h"
 #include <vector>
-#include "TargetableComponent.h"
+//#include "TargetableComponent.h"
 
 #include "MilitaryUnit.generated.h"
 
-//class UTargetable;
+class UTargetableComponent;
+//class USphereCollision;
 
 enum RTS_DEMO_API UnitState : uint8 {
 	IDLE = 0 UMETA(DisplayName = "IDLE"),
@@ -26,6 +27,12 @@ class RTS_DEMO_API AMilitaryUnit : public ACharacter
 	GENERATED_BODY()
 
 private:
+	UPROPERTY(VisibleAnywhere)
+	UTargetableComponent* targetableComp;
+	UPROPERTY(VisibleAnywhere)
+	class USphereComponent* attackRangeSphere;
+	
+
 	FVector navTarget;
 	int faction;
 	bool selected;
@@ -55,7 +62,7 @@ protected:
 	virtual void BeginPlay() override;
 	UFUNCTION()
 	bool IsOwnedBy(int player);
-	bool CheckIfValidTarget(AActor potentionalTarget);
+	bool CheckIfValidTarget(AActor* potentionalTarget);
 	std::vector<UTargetableComponent*> GetTargetsInRange();
 	void BeginAttack();
 	// previously: Returns true if target died
