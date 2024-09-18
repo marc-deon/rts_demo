@@ -3,6 +3,9 @@
 #include "MilitaryUnit.h"
 #include "TargetableComponent.h"
 #include "Components/SphereComponent.h"
+#include "Components/StateTreeComponent.h"
+//#include "NativeGameplayTags.h"
+#include "GameplayTagsManager.h"
 
 // Sets default values
 AMilitaryUnit::AMilitaryUnit()
@@ -19,6 +22,16 @@ AMilitaryUnit::AMilitaryUnit()
 	attackRangeSphere->SetupAttachment(RootComponent);
 	attackRangeSphere->SetSphereRadius(attackRange);
 
+	/*basicMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("cube"));
+	basicMesh->SetupAttachment(RootComponent);*/
+
+	stateTree = CreateDefaultSubobject<UStateTreeComponent>(TEXT("state tree"));
+	//stateTree->
+	//stateTree->SetupAttachment(RootComponent);
+
+	selectedIndicator = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Select Indicator"));
+	selectedIndicator->SetupAttachment(RootComponent);
+
 	UE_LOG(LogTemp, Display, TEXT("Setup completed"));
 }
 
@@ -33,7 +46,29 @@ AMilitaryUnit::AMilitaryUnit(int faction)
 void AMilitaryUnit::BeginPlay()
 {
 	Super::BeginPlay();
+	stateTree->StartLogic();
 	
+}
+
+// TODO NEXT
+void AMilitaryUnit::SetNavTarget(FVector location) {
+	navTarget = location;
+	UE_LOG(LogTemp, Display, TEXT("Setting nav target"));
+	FName name = FName("Found New Target");
+	FGameplayTag gpt = UGameplayTagsManager::Get().RequestGameplayTag(name, true);
+	stateTree->SendStateTreeEvent(gpt);
+}
+
+void AMilitaryUnit::OnSelect() {
+	selected = true;
+	UE_LOG(LogTemp, Display, TEXT("Selected"));
+	selectedIndicator->SetVisibility(true);
+}
+
+void AMilitaryUnit::OnDeselect() {
+	selected = false;
+	UE_LOG(LogTemp, Display, TEXT("Selected"));
+	selectedIndicator->SetVisibility(false);
 }
 
 // Called every frame
@@ -72,29 +107,30 @@ bool AMilitaryUnit::CheckIfValidTarget(AActor* potentialTarget) {
 		return false;
 
 	// Get the (2D) distance from us to target
-	float distSquared = Get2DDistanceSquared(GetActorLocation(), pt->GetAttachParentActor()->GetActorLocation());
+float distSquared = Get2DDistanceSquared(GetActorLocation(), pt->GetAttachParentActor()->GetActorLocation());
 	// Can't target out of range
 	if (distSquared > pow(attackRange, 2))
 		return false;
 
 	return true;
+	//return false;
 }
 
-std::vector<UTargetableComponent*> AMilitaryUnit::GetTargetsInRange() {
+TArray<UTargetableComponent*> AMilitaryUnit::GetTargetsInRange() {
 	return targetsInRange;
 }
 
 void AMilitaryUnit::BeginAttack() {
-	currentState = UnitState::ATTACKING;
+	currentState = EUnitState::ATTACKING;
 	attackTimer = attackSpeed;
 }
 
-void AMilitaryUnit::DoAttack(float DeltaTime) {
+bool AMilitaryUnit::DoAttack(float DeltaTime) {
 	attackTimer -= DeltaTime;
 
 	if (attackTimer > 0)
-		return;
+		return false;
 
 	attackTimer += attackSpeed;
-	attackTarget->ReceiveDamage(attackDamage);
+	return attackTarget->ReceiveDamage(attackDamage);
 }

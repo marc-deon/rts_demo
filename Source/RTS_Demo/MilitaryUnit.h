@@ -4,16 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "UnitState.h"
 #include <vector>
 //#include "TargetableComponent.h"
+
 
 #include "MilitaryUnit.generated.h"
 
 class UTargetableComponent;
 //class USphereCollision;
 
-enum RTS_DEMO_API UnitState : uint8 {
+UENUM()
+//enum RTS_DEMO_API EUnitState : uint8 {
+enum EUnitState {
 	IDLE = 0 UMETA(DisplayName = "IDLE"),
 	MOVING = 1 UMETA(DisplayName = "MOVING"),
 	ATTACKING = 2 UMETA(DisplayName = "ATTACKING"),
@@ -31,18 +33,30 @@ private:
 	UTargetableComponent* targetableComp;
 	UPROPERTY(VisibleAnywhere)
 	class USphereComponent* attackRangeSphere;
-	
+	//UPROPERTY(VisibleAnywhere)
+	//class UStaticMeshComponent* basicMesh;
 
-	FVector navTarget;
-	int faction;
+	UPROPERTY(VisibleAnywhere)
+	class UStateTreeComponent* stateTree;
+
+	UPROPERTY(VisibleAnywhere)
+	class UStaticMeshComponent* selectedIndicator;
+
+
 	bool selected;
 	UTargetableComponent* attackTarget;
-	std::vector<UTargetableComponent*> targetsInRange;
-	UnitState currentState;
+	TArray<UTargetableComponent*> targetsInRange;
 
 	//UTargetable
 
 public:
+
+	UPROPERTY(BlueprintReadWrite, Meta = (ExposeOnSpawn = "true"))
+	int faction;
+	UPROPERTY(BlueprintReadOnly)
+	FVector navTarget;
+	UPROPERTY(BlueprintReadWrite)
+	TEnumAsByte<EUnitState> currentState;
 	UPROPERTY(EditAnywhere)
 	float attackRange;
 	UPROPERTY(EditAnywhere)
@@ -60,17 +74,26 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-	UFUNCTION()
+	
+public:	
+	UFUNCTION(BlueprintCallable)
+	void OnSelect();
+	UFUNCTION(BlueprintCallable)
+	void OnDeselect();
+	UFUNCTION(BlueprintCallable)
 	bool IsOwnedBy(int player);
+	UFUNCTION(BlueprintCallable)
 	bool CheckIfValidTarget(AActor* potentionalTarget);
-	std::vector<UTargetableComponent*> GetTargetsInRange();
+	UFUNCTION(BlueprintCallable)
+	TArray<UTargetableComponent*> GetTargetsInRange();
+	UFUNCTION(BlueprintCallable)
 	void BeginAttack();
 	// previously: Returns true if target died
 	// Should: do nothing; we will respond to target death via some kind of event
-	void DoAttack(float DeltaTime);
-
-
-public:	
+	UFUNCTION(BlueprintCallable)
+	bool DoAttack(float DeltaTime);
+	UFUNCTION(BlueprintCallable)
+	void SetNavTarget(FVector location);
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 

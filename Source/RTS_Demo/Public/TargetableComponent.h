@@ -17,6 +17,9 @@ private:
 	int currentHealth;
 	int maxHealth;
 	void* HealthBar;
+	//UPROPERTY(VisibleAnywhere)
+	//WB_HealthBar* healthBar;
+	//UUserWidget* healthBarWidget;
 
 	void Die();
 
