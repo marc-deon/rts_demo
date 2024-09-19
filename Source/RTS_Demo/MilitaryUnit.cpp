@@ -4,8 +4,8 @@
 #include "TargetableComponent.h"
 #include "Components/SphereComponent.h"
 #include "Components/StateTreeComponent.h"
-//#include "NativeGameplayTags.h"
 #include "GameplayTagsManager.h"
+#include "StateTreeEvents.h"
 
 // Sets default values
 AMilitaryUnit::AMilitaryUnit()
@@ -13,6 +13,7 @@ AMilitaryUnit::AMilitaryUnit()
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	selected = false;
+	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 	
 	targetableComp = CreateDefaultSubobject<UTargetableComponent>(TEXT("CPP Targetable Component"));
 	targetableComp->SetupAttachment(RootComponent);
@@ -22,12 +23,9 @@ AMilitaryUnit::AMilitaryUnit()
 	attackRangeSphere->SetupAttachment(RootComponent);
 	attackRangeSphere->SetSphereRadius(attackRange);
 
-	/*basicMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("cube"));
-	basicMesh->SetupAttachment(RootComponent);*/
 
 	stateTree = CreateDefaultSubobject<UStateTreeComponent>(TEXT("state tree"));
-	//stateTree->
-	//stateTree->SetupAttachment(RootComponent);
+	stateTree->SetStartLogicAutomatically(true);
 
 	selectedIndicator = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Select Indicator"));
 	selectedIndicator->SetupAttachment(RootComponent);
@@ -46,17 +44,13 @@ AMilitaryUnit::AMilitaryUnit(int faction)
 void AMilitaryUnit::BeginPlay()
 {
 	Super::BeginPlay();
-	stateTree->StartLogic();
-	
 }
 
-// TODO NEXT
 void AMilitaryUnit::SetNavTarget(FVector location) {
 	navTarget = location;
 	UE_LOG(LogTemp, Display, TEXT("Setting nav target"));
-	FName name = FName("Found New Target");
-	FGameplayTag gpt = UGameplayTagsManager::Get().RequestGameplayTag(name, true);
-	stateTree->SendStateTreeEvent(gpt);
+	const FGameplayTag gpt = UGameplayTagsManager::Get().RequestGameplayTag(FName("New Nav Target"), true);
+	stateTree->SendStateTreeEvent(FStateTreeEvent(gpt));
 }
 
 void AMilitaryUnit::OnSelect() {
@@ -71,6 +65,7 @@ void AMilitaryUnit::OnDeselect() {
 	selectedIndicator->SetVisibility(false);
 }
 
+int foo = 0;
 // Called every frame
 void AMilitaryUnit::Tick(float DeltaTime)
 {
@@ -95,25 +90,26 @@ float Get2DDistanceSquared(FVector a, FVector b) {
 
 // TODO: Test
 bool AMilitaryUnit::CheckIfValidTarget(AActor* potentialTarget) {
-	// Attempt to cast PT to Targetable
-	UTargetableComponent* pt = Cast<UTargetableComponent>(potentialTarget);
-	
-	// Can't target something that's not targetable
-	if (pt == NULL)
-		return false;
-
-	// Can't target allies
-	if (pt->GetFaction() == faction)
-		return false;
-
-	// Get the (2D) distance from us to target
-float distSquared = Get2DDistanceSquared(GetActorLocation(), pt->GetAttachParentActor()->GetActorLocation());
-	// Can't target out of range
-	if (distSquared > pow(attackRange, 2))
-		return false;
-
-	return true;
-	//return false;
+	return false;
+//	// Attempt to cast PT to Targetable
+//	UTargetableComponent* pt = Cast<UTargetableComponent>(potentialTarget);
+//	
+//	// Can't target something that's not targetable
+//	if (pt == NULL)
+//		return false;
+//
+//	// Can't target allies
+//	if (pt->GetFaction() == faction)
+//		return false;
+//
+//	// Get the (2D) distance from us to target
+//float distSquared = Get2DDistanceSquared(GetActorLocation(), pt->GetAttachParentActor()->GetActorLocation());
+//	// Can't target out of range
+//	if (distSquared > pow(attackRange, 2))
+//		return false;
+//
+//	return true;
+//	//return false;
 }
 
 TArray<UTargetableComponent*> AMilitaryUnit::GetTargetsInRange() {
@@ -132,5 +128,9 @@ bool AMilitaryUnit::DoAttack(float DeltaTime) {
 		return false;
 
 	attackTimer += attackSpeed;
+	if (!attackTarget) {
+		UE_LOG(LogTemp, Error, TEXT("invalid target"));
+		return false;
+	}
 	return attackTarget->ReceiveDamage(attackDamage);
 }

@@ -44,7 +44,7 @@ private:
 
 
 	bool selected;
-	UTargetableComponent* attackTarget;
+	UTargetableComponent* attackTarget = NULL;
 	TArray<UTargetableComponent*> targetsInRange;
 
 	//UTargetable
