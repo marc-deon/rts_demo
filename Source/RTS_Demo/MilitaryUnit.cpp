@@ -4,6 +4,7 @@
 #include "TargetableComponent.h"
 #include "Components/SphereComponent.h"
 #include "Components/StateTreeComponent.h"
+//#include "NativeGameplayTags.h"
 #include "GameplayTagsManager.h"
 #include "StateTreeEvents.h"
 
@@ -23,9 +24,13 @@ AMilitaryUnit::AMilitaryUnit()
 	attackRangeSphere->SetupAttachment(RootComponent);
 	attackRangeSphere->SetSphereRadius(attackRange);
 
+	/*basicMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("cube"));
+	basicMesh->SetupAttachment(RootComponent);*/
 
 	stateTree = CreateDefaultSubobject<UStateTreeComponent>(TEXT("state tree"));
 	stateTree->SetStartLogicAutomatically(true);
+	//stateTree->
+	//stateTree->SetupAttachment(RootComponent);
 
 	selectedIndicator = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Select Indicator"));
 	selectedIndicator->SetupAttachment(RootComponent);
@@ -44,12 +49,17 @@ AMilitaryUnit::AMilitaryUnit(int faction)
 void AMilitaryUnit::BeginPlay()
 {
 	Super::BeginPlay();
+	
+	
 }
 
+// TODO NEXT
 void AMilitaryUnit::SetNavTarget(FVector location) {
 	navTarget = location;
 	UE_LOG(LogTemp, Display, TEXT("Setting nav target"));
+	//FName name = FName("Found New Target");
 	const FGameplayTag gpt = UGameplayTagsManager::Get().RequestGameplayTag(FName("New Nav Target"), true);
+	//FStateTreeEvent()
 	stateTree->SendStateTreeEvent(FStateTreeEvent(gpt));
 }
 
@@ -70,6 +80,16 @@ int foo = 0;
 void AMilitaryUnit::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	//if (foo == 0 && !stateTree->IsRunning()) {
+	//	foo = 20;
+	//	stateTree->StartLogic();
+	//}
+	//else {
+	//	foo--;
+	//}
+
+	UE_LOG(LogTemp, Display, TEXT("Status %d"), stateTree->IsRunning());
 
 }
 
