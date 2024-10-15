@@ -5,12 +5,12 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include <vector>
-//#include "TargetableComponent.h"
+#include "TargetableComponent.h"
 
 
 #include "MilitaryUnit.generated.h"
 
-class UTargetableComponent;
+//class UTargetableComponent;
 //class USphereCollision;
 
 UENUM()
@@ -30,18 +30,10 @@ class RTS_DEMO_API AMilitaryUnit : public ACharacter
 
 private:
 	UPROPERTY(VisibleAnywhere)
-	UTargetableComponent* targetableComp;
-	UPROPERTY(VisibleAnywhere)
-	class USphereComponent* attackRangeSphere;
-	//UPROPERTY(VisibleAnywhere)
-	//class UStaticMeshComponent* basicMesh;
-
-	UPROPERTY(VisibleAnywhere)
 	class UStateTreeComponent* stateTree;
 
 	UPROPERTY(VisibleAnywhere)
 	class UStaticMeshComponent* selectedIndicator;
-
 
 	bool selected;
 	UTargetableComponent* attackTarget = NULL;
@@ -50,6 +42,10 @@ private:
 	//UTargetable
 
 public:
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	UTargetableComponent* targetableComp;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	class USphereComponent* attackRangeSphere;
 
 	UPROPERTY(BlueprintReadWrite, Meta = (ExposeOnSpawn = "true"))
 	int faction;
@@ -57,15 +53,16 @@ public:
 	FVector navTarget;
 	UPROPERTY(BlueprintReadWrite)
 	TEnumAsByte<EUnitState> currentState;
-	UPROPERTY(EditAnywhere)
-	float attackRange;
-	UPROPERTY(EditAnywhere)
-	int attackDamage;
-	UPROPERTY(EditAnywhere)
-	float attackSpeed;
-	UPROPERTY(EditAnywhere)
-	float attackTimer;
 
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	float attackRange;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	int attackDamage;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	float attackSpeed;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	float attackTimer;
+	
 
 public:
 	AMilitaryUnit();
@@ -76,6 +73,8 @@ protected:
 	virtual void BeginPlay() override;
 	
 public:	
+	UFUNCTION()
+	void CB_OnComponentBeginOverlap(UPrimitiveComponent* overlapped, AActor* other_actor, UPrimitiveComponent* other_comp, int other_body_index, bool from_sweep, const FHitResult& sweep_result);
 	UFUNCTION(BlueprintCallable)
 	void OnSelect();
 	UFUNCTION(BlueprintCallable)

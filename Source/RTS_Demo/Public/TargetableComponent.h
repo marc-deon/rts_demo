@@ -3,12 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Components/SceneComponent.h"
+//#include "Components/SceneComponent.h"
+#include "Components/SphereComponent.h"
 #include "TargetableComponent.generated.h"
 
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class RTS_DEMO_API UTargetableComponent : public USceneComponent
+//class RTS_DEMO_API UTargetableComponent : public USceneComponent
+class RTS_DEMO_API UTargetableComponent : public USphereComponent
 {
 	GENERATED_BODY()
 
